@@ -5,8 +5,6 @@ import userRouter from './routes/user.js';
 import dotenv from 'dotenv';
 import cors from 'cors'
 import path from 'path'
-const app = express();
-const PORT = process.env.PORT || 3000;
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 import { createProject, getAllProjects } from './routes/projectRoutes.js';
@@ -14,19 +12,27 @@ import moduleRoute from './routes/moduleRoute.js';
 import taskRoute from './routes/taskRoutes.js';
 import axios from 'axios';
 import Task from './models/Task.js'; 
+import { notFoundError, errorHandler } from './middlewares/error-handler.js';
+import User from './models/user.js';
+import Project from './models/Project.js';
+import Module from './models/Module.js'
 
+
+const app = express();
+const PORT = process.env.PORT || 3000;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-import { notFoundError, errorHandler } from './middlewares/error-handler.js';
+
 dotenv.config();
 app.use(morgan('dev'));
 app.use(cors())
 app.use(express.json());
+
 app.use('/user', userRouter);
 app.get("/logout", (req, res) => {
   res.cookie("jwt", "", { maxAge: "1" })
   res.status(201).json({ message: 'successfully logged out ' })
-})
+});
 
 app.get('/uploads/:filename', (req, res) => {
   const filename = req.params.filename;
@@ -35,6 +41,19 @@ app.get('/uploads/:filename', (req, res) => {
   // Send the image file
   res.sendFile(imagePath);
 });
+
+app.get('/user-specialties/:email', async (req, res) => {
+  try {
+    const email = req.params.email;
+    // Find user specialties by email
+    const specialty = await User.findByEmail(email);
+    res.status(200).json({ specialty });
+  } catch (error) {
+    console.error('Error fetching user specialties:', error.message);
+    res.status(500).json({ message: error.message });
+  }
+});
+
 const generateSteps = async (task_description) => {
   try {
       const response = await axios.post('http://127.0.0.1:5000/task-title', { task_description });
@@ -44,6 +63,7 @@ const generateSteps = async (task_description) => {
       return null;
   }
 };
+
 app.get('/task/:id', async (req, res) => {
   try {
       const taskId = req.params.id;
@@ -51,7 +71,7 @@ app.get('/task/:id', async (req, res) => {
 
       if (!task) {
           return res.status(404).json({ message: 'Task not found' });
-      }
+      } 
 
       // Extract task_description from the task
       const task_description = task.task_description;
@@ -68,6 +88,29 @@ app.get('/task/:id', async (req, res) => {
       res.status(500).json({ message: error.message });
   }
 });
+
+app.post('/getByEmail', async (req, res) => {
+  const { email } = req.body;
+  try {
+    const projects = await Project.find({ members: email });
+    res.status(200).json(projects);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+});
+
+
+app.post('/getMByEmail', async(req, res) => {
+  const { email } = req.body;
+  try {
+    
+    const modules = await Module.find( {teamM: email});
+    res.status(200).json(modules);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+})
+
 
 app.use('/projects', createProject);
 app.use('/projectss', getAllProjects);
@@ -86,7 +129,6 @@ mongoose.connect('mongodb+srv://ahmedmaadi19:Ahmedmaadimido19@ahmed.uiec5dx.mong
     console.log(error);
   });
 
-
-app.listen(3000, () => {
-  console.log('Node app is running on port 3000');
+app.listen(PORT, () => {
+  console.log(`Node app is running on port ${PORT}`);
 });

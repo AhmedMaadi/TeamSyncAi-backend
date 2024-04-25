@@ -11,6 +11,7 @@ const projectSchema = new mongoose.Schema({
     members: [String]
 });
 
+
 const Project = mongoose.model('Project', projectSchema);
 
 export default Project;

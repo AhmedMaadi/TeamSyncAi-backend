@@ -1,6 +1,9 @@
 import axios from 'axios';
 import Project from '../models/Project.js';
 
+
+
+
 export function createProject(req, res) {
     const { name, startDate, endDate, description, keywords, members, teamLeader } = req.body;
 
@@ -45,6 +48,8 @@ export function createProject(req, res) {
         res.status(500).json({ error: 'Error saving project' });
     });
 }
+
+
 export function getAllProjects(req, res) {
     Project.find()
         .then(projects => {

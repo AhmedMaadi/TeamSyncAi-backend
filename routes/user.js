@@ -2,7 +2,7 @@ import express from 'express';
 const router = express.Router();
 import multer from 'multer';
 import  User  from '../models/user.js';
-import { createAccountClient, extractSkillsFromUploadedPDF , updateUser , authenticateClient, authenticateClientSub,recoverPasswordByPhoneNumber,verifyOtp,sendOTP, getUserIdByEmail, displayAllUsers, displayUserProfile, banUser, getUserById, deleteUser, sendActivationCode, forgotPassword, changePassword,verifyCode,getAllspecialite,ProfilePicUpload,parsePDF } from '../controllers/user.js';
+import { createAccountClient, extractSkillsFromUploadedPDF , updateUser , authenticateClient, authenticateClientSub,recoverPasswordByPhoneNumber,verifyOtp,sendOTP, getUserIdByEmail, displayAllUsers, displayUserProfile, banUser, getUserById, deleteUser, sendActivationCode, forgotPassword, changePassword,verifyCode,getAllspecialite,ProfilePicUpload,parsePDF, getSpecialtyByEmail } from '../controllers/user.js';
 import { auth } from '../middlewares/auth.js'; 
 import { body } from 'express-validator';
 
@@ -130,6 +130,9 @@ router.get('/user-skills/:userId', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch user skills' });
   }
 });
+
+router.get('/specialtyByEmail/:email', getSpecialtyByEmail);
+
 export default router;
 
 

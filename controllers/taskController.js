@@ -77,7 +77,7 @@ export async function createDefaultTask(projectID, module_id) {
     try {
         const defaultTaskDescription = 'New Task';
 
-        const newTask = new Task({ module_id: module_id, task_description: defaultTaskDescription, projectID });
+        const newTask = new Task({ module_id: module_id, task_description: defaultTaskDescription, projectID, team: [] });
         await newTask.save();
 
         console.log('Default task created successfully');
@@ -85,5 +85,29 @@ export async function createDefaultTask(projectID, module_id) {
     } catch (error) {
         console.error('Error creating default task:', error);
         throw error;
+    }
+}
+
+
+
+export const markTaskAsCompleted = async (req,res) => {
+    const taskId = req.params.taskId;
+
+    try {
+      
+        const task = await Task.findById(taskId);
+
+        if (!task) {
+            return res.status(404).json({ message: 'Task not found' });
+        }
+
+        task.completed = true;
+
+        await task.save();
+
+        return res.status(200).json({ message: 'Task marked as completed' });
+    } catch (error) {
+        console.error('Error marking task as completed:', error);
+        return res.status(500).json({ message: 'Internal server error' });
     }
 }

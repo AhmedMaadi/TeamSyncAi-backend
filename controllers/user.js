@@ -762,7 +762,24 @@ export async function getUserSkills(req, res) {
     res.status(500).json({ error: 'Failed to fetch user skills' });
   }
 }
+export async function getSpecialtyByEmail(req, res) {
+  try {
+    const email = req.params.email;
 
+    // Find the user by email
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Return the specialty if found
+    res.status(200).json({ specialty: user.specialty });
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+}
 
 
 

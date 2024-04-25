@@ -116,6 +116,20 @@ this.password = await bcrypt.hash(this.password, 8);
 }
 next();
 });
+userSchema.statics.findByEmail = async function(email) {
+  try {
+    // Find the user by email
+    const user = await this.findOne({ email });
+    // If user is not found, return null or throw an error as per your requirement
+    if (!user) {
+      throw new Error('User not found');
+    }
+    // Return the user's specialty
+    return user.specialty;
+  } catch (error) {
+    throw new Error('Error fetching user by email: ' + error.message);
+  }
+};
 
 
 const User = mongoose.model('User', userSchema);
