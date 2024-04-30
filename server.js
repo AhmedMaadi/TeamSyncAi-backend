@@ -110,6 +110,94 @@ app.post('/getMByEmail', async(req, res) => {
     res.status(400).json({ message: error.message });
   }
 })
+const getProjectNameById = async (projectId) => {
+  try {
+    // Trim the projectId to remove any whitespace or newline characters
+    projectId = projectId.trim();
+    
+    const project = await Project.findById(projectId);
+    return project ? project.name : 'Unknown Project';
+  } catch (error) {
+    console.error('Error fetching project name:', error.message);
+    throw new Error('Failed to fetch project name');
+  }
+};
+app.get('/project/:projectId', async (req, res) => {
+  const { projectId } = req.params;
+  try {
+    const projectName = await getProjectNameById(projectId);
+    res.status(200).json({ projectName });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+const getTasksByModuleId = async (moduleId) => {
+  try {
+    const tasks = await Task.find({ module_id: moduleId });
+    return tasks;
+  } catch (error) {
+    console.error('Error fetching tasks by module ID:', error.message);
+    throw new Error('Failed to fetch tasks by module ID');
+  }
+};
+
+const calculateCompletionPercentage = async (moduleId) => {
+  try {
+    // Fetch all tasks associated with the module
+    const tasks = await Task.find({ module_id: moduleId });
+    
+    if (tasks.length === 0) {
+      return 0; // If there are no tasks, completion percentage is 0
+    }
+    
+    // Count the number of completed tasks
+    const completedTasksCount = tasks.filter(task => task.completed).length;
+    
+    // Calculate the completion percentage
+    const completionPercentage = (completedTasksCount / tasks.length) * 100;
+    
+    return completionPercentage;
+  } catch (error) {
+    console.error('Error calculating completion percentage:', error.message);
+    throw new Error('Failed to calculate completion percentage');
+  }
+};
+
+// Define a route handler to handle requests for fetching tasks by module ID
+app.get('/tasks/:moduleId', async (req, res) => {
+  let { moduleId } = req.params;
+  moduleId = moduleId.trim(); // Trim any extra characters
+  try {
+    // Call the function to fetch tasks by module ID
+    const tasks = await getTasksByModuleId(moduleId);
+
+    // Calculate the completion percentage for the module
+    const completionPercentage = await calculateCompletionPercentage(moduleId);
+    
+    // Combine tasks and completion percentage into a single response
+    const responseData = {
+      tasks,
+      completionPercentage
+    };
+
+    res.status(200).json(responseData);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+app.get('/completionPercentage/:moduleId', async (req, res) => {
+  let { moduleId } = req.params;
+  moduleId = moduleId.trim(); // Trim any extra characters
+  try {
+    // Calculate the completion percentage for the module
+    const completionPercentage = await calculateCompletionPercentage(moduleId);
+    
+    // Send the completion percentage as the response
+    res.status(200).json({ completionPercentage });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
 
 
 app.use('/projects', createProject);
